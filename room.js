@@ -1,10 +1,4 @@
-var queue = [
-		'lwlogyj7nFE',
-		'YXdOAUKCc0k',
-		'6hzrDeceEKc',
-		'r8OipmKFDeM',
-		'gGdGFtwCNBE'
-	];
+var queue = ["sENM2wA_FTg", "fe4EK4HSPkI", "bXHuC84WniI", "rn9AQoI7mYU", "6hzrDeceEKc", "RIZdjT1472Y", "lwlogyj7nFE", "7E0fVfectDo", "YXdOAUKCc0k", "gGdGFtwCNBE", "otCpCn0l4Wo", "YgSPaXgAdzE", "SSbBvKaM6sk", "UclCCFNG9q4", "hTMrlHHVx8A", "gOLY7bjCTTE", "r8OipmKFDeM"];
 
 exports.addSongToQueue = function(song){
 	queue.push(song);

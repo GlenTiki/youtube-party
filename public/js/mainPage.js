@@ -1,4 +1,4 @@
-var API_KEY = 'PUT YOUR API KEY HERE';
+var API_KEY = 'YOUR API KEY';
 
 var socket = io();
 
@@ -33,13 +33,12 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	$scope.newSong = {};
 
 	socket.on('current queue', function(queueArr){
-		console.log(queueArr);
-
 		cacheAndAddVideos(queueArr);
 
 		if(player){
 			if(player.getVideoData().video_id !== queueArr[0]){
 				player.loadVideoById(queueArr[0]);
+        player.stopVideo();
 			}
 		}
 
@@ -72,7 +71,7 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	};
 
 	function cacheAndAddVideos(queueArr){
-		$scope.playlist.splice(0, queueArr.length)
+		$scope.playlist.splice(0, queueArr.length);
 		queueArr.forEach(function(videoId, index){
 			if($scope.cachedResponces[videoId]){
 				$scope.cachedResponces[videoId].index = index;
