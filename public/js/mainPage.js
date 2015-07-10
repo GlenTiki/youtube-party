@@ -16,18 +16,14 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {
   event.target.playVideo();
-  socket.emit('get top of queue');
+  socket.emit('get queue');
 }
 
 function onPlayerStateChange(event) {
 	if(event.data == YT.PlayerState.ENDED){
-  	socket.emit('pop top of queue');
+  	socket.emit('pop top of queue', player.getVideoData().video_id);
 	}
 }
-
-socket.on('new top of queue', function(top){
-	if(player) player.loadVideoById(top);
-});
 
 var helloApp = angular.module("helloApp", []);
 
@@ -37,20 +33,28 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	$scope.newSong = {};
 
 	socket.on('current queue', function(queueArr){
+		console.log(queueArr);
+
 		cacheAndAddVideos(queueArr);
+
+		if(player){
+			if(player.getVideoData().video_id !== queueArr[0]){
+				player.loadVideoById(queueArr[0]);
+			}
+		}
+
+		$scope.$apply();
 	});
 
 	$scope.skipSong = function(){
-		socket.emit('pop top of queue', $scope.playlist[0]);
+		socket.emit('pop top of queue', $scope.playlist[0].id);
 	}
 
 	$scope.removeSong = function(song){
-		for(i in $scope.playlist) {
-      if($scope.playlist[i].id == song.id) {
-        $scope.playlist.splice(i, 1);
-      }
-    }
+		delete $scope.playlist[$scope.cachedResponces[song.id].index];
 		delete $scope.cachedResponces[song.id];
+		console.log($scope.playlist);
+		$scope.$apply();
 		socket.emit('delete song by id', song.id);
 	}
 
@@ -68,12 +72,11 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	};
 
 	function cacheAndAddVideos(queueArr){
-		$scope.playlist.splice(queueArr.length, $scope.playlist.length - queueArr.length);
+		$scope.playlist.splice(0, queueArr.length)
 		queueArr.forEach(function(videoId, index){
-
 			if($scope.cachedResponces[videoId]){
 				$scope.cachedResponces[videoId].index = index;
-				$scope.playlist[$scope.cachedResponces[videoId].index] = $scope.cachedResponces[videoId];
+				$scope.playlist[index] = $scope.cachedResponces[videoId];
 			} else {
 				var responsePromise = $http.get("https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id="+videoId+"&key="+API_KEY);
 	
@@ -84,7 +87,6 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 				  $scope.cachedResponces[videoId].index = index;
 					$scope.playlist[$scope.cachedResponces[videoId].index] = $scope.cachedResponces[videoId];
       	});
-
 			}
 		});
 	}

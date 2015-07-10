@@ -41,38 +41,32 @@ app.use(function(err, req, res, next) {
 
 io.on('connection', function(socket){
   console.log('a user connected');
-  
-  setTimeout(function(){
-  	socket.emit('current queue', room.getQueue());
+
+  setInterval(function(){
+    socket.emit('current queue', room.getQueue());
   }, 1000);
 
-  socket.on('get top of queue', function(){
+  socket.on('get queue', function(){
   	socket.emit('current queue', room.getQueue());
-  	socket.emit('new top of queue', room.getQueue()[0]);
   });
 
-  socket.on('pop top of queue', function(song){
-    if(song.id === room.getQueue()[0]){
-      room.removeTopSongFromQueue();
+  socket.on('pop top of queue', function(songId){
+    if(songId === room.getQueue()[0]){
+      room.pushTopSongToEnd();
     }
-  	socket.emit('current queue', room.getQueue());
-  	socket.broadcast.emit('new top of queue', room.getQueue()[0]);
+  	socket.broadcast.emit('current queue', room.getQueue());
   });
 
   socket.on('delete song by id', function(id){
   	var pl = room.getQueue();
   	var i = pl.indexOf(id);
   	room.deleteSong(i);
-  	socket.emit('current queue', room.getQueue());
-  	if(i === 0){  	
-  		socket.emit('new top of queue', room.getQueue()[0]);
-  	}
+  	socket.broadcast.emit('current queue', room.getQueue());
   });
 
   socket.on('add song', function(newId){
   	room.addSongToQueue(newId);
-  	socket.emit('current queue', room.getQueue());
-  	if(room.getQueue().length === 1) socket.emit('new top of queue', room.getQueue()[0]);
+  	socket.broadcast.emit('current queue', room.getQueue());
   });
 
   socket.on('bring to front', function(id){
@@ -80,7 +74,7 @@ io.on('connection', function(socket){
   	var i = pl.indexOf(id);
 
   	room.moveSong(i, 1)
-  	socket.emit('current queue', room.getQueue());
+  	socket.broadcast.emit('current queue', room.getQueue());
   });
 
   socket.on('push to back', function(id){
@@ -88,8 +82,7 @@ io.on('connection', function(socket){
   	var i = pl.indexOf(id);
   	room.deleteSong(i);
   	room.addSongToQueue(id);
-  	socket.emit('current queue', room.getQueue());
-  	if(i === 0) socket.emit('new top of queue', room.getQueue()[0]);
+  	socket.broadcast.emit('current queue', room.getQueue());
   })
 });
 
