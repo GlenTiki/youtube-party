@@ -1,4 +1,4 @@
-var API_KEY = 'AIzaSyBWxb8QzNTy47Y_PVlWDmRhQ0ymcsp6JKk';
+var API_KEY = 'PUT YOUR API KEY HERE';
 
 var socket = io();
 
