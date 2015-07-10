@@ -1,0 +1,44 @@
+<!doctype html>
+<html ng-app="helloApp">
+  <head>
+    <title>lan party</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      div { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+    </style>
+  </head>
+  <body ng-controller="PlaylistCtrl">
+
+    <div id="player"></div>
+    <input type="button" value="Skip" ng-click="skipSong()" width='100px'/>
+
+    <table class="table">
+			<tr>
+				<th width='400px'>Video title</th>
+				<th width='200px'>Length</th>
+				<th width='100px'>Remove</th>
+				<th width='100px'>Bring to front</th>
+				<th width='100px'>Push to back</th>
+			</tr>
+			<tr ng-repeat="song in playlist">
+				<td>{{song.title}}</td>
+				<td>{{song.duration | convert_time | seconds_to_string}}</td>
+				<td><input type="button" value="delete" ng-click="removeSong(song)" /></td>
+				<td><input type="button" value="bring to front" ng-click="bringToFront(song)" /></td>
+				<td><input type="button" value="push to back" ng-click="pushToBack(song)" /></td>
+			</tr>
+		</table>
+
+		<form>
+    	<label>Id</label> 
+      <input type="text" name="name" ng-model="newSong.id"/>
+      <input type="button" value="Save" ng-click="saveSong()" />
+    </form>
+
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+		<script src="/js/mainPage.js"></script>
+  </body>
+</html>
