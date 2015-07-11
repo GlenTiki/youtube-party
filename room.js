@@ -1,7 +1,10 @@
-var queue = ["sENM2wA_FTg", "fe4EK4HSPkI", "bXHuC84WniI", "rn9AQoI7mYU", "6hzrDeceEKc", "RIZdjT1472Y", "lwlogyj7nFE", "7E0fVfectDo", "YXdOAUKCc0k", "gGdGFtwCNBE", "otCpCn0l4Wo", "YgSPaXgAdzE", "SSbBvKaM6sk", "UclCCFNG9q4", "hTMrlHHVx8A", "gOLY7bjCTTE", "r8OipmKFDeM"];
+var fs = require('fs');
+
+var queue = require('./currQueue');
 
 exports.addSongToQueue = function(song){
-	queue.push(song);
+	if(queue.indexOf(song) === -1) queue.push(song);
+	writeQueueToFile()
 }
 
 exports.getQueue = function(){
@@ -12,14 +15,27 @@ exports.pushTopSongToEnd = function(){
   var element = queue[0];
   queue.splice(0, 1);
   queue.push(element);
+  writeQueueToFile()
 }
 
 exports.moveSong = function(currentLocation, newLocation){
   var element = queue[currentLocation];
   queue.splice(currentLocation, 1);
   queue.splice(newLocation, 0, element);
+  writeQueueToFile()
 }
 
 exports.deleteSong = function(currentLocation){
 	queue.splice(currentLocation, 1);
+	writeQueueToFile()
+}
+
+var writeQueueToFile = function(){
+	var buff = new Buffer('module.exports = ' + JSON.stringify(queue) + ';');
+	var fd = __dirname + '/currQueue.js';
+	
+	fs.writeFile(fd, buff, function(err){
+		if(err) {console.log('problem writing to file');}
+		console.log('finished write to file');
+	});
 }

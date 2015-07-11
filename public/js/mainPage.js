@@ -1,4 +1,4 @@
-var API_KEY = 'YOUR API KEY';
+var API_KEY = 'YOUR KEY HERE';
 
 var socket = io();
 
@@ -29,8 +29,10 @@ var helloApp = angular.module("helloApp", []);
 
 helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	$scope.playlist = [];
+	$scope.searchResults = [];
 	$scope.cachedResponces = {};
 	$scope.newSong = {};
+	$scope.queryStr = '';
 
 	socket.on('current queue', function(queueArr){
 		cacheAndAddVideos(queueArr);
@@ -38,7 +40,7 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 		if(player){
 			if(player.getVideoData().video_id !== queueArr[0]){
 				player.loadVideoById(queueArr[0]);
-        player.stopVideo();
+        //player.stopVideo();
 			}
 		}
 
@@ -65,9 +67,21 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 		socket.emit('push to back', song.id);
 	}
 
-	$scope.saveSong = function(){
-		socket.emit('add song', $scope.newSong.id);
-		$scope.newSong = {};
+	$scope.saveSong = function(songId){
+		socket.emit('add song', songId);
+	};
+
+	$scope.search = function(queryStr){
+		$scope.searchResults = [];
+		var responsePromise = $http.get("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+queryStr+"&maxResults=50&key="+API_KEY);
+	
+		responsePromise.success(function(data, status, headers, config) {
+			data.items.forEach(function(video, i){
+				video.snippet.id = video.id.videoId;
+				$scope.searchResults[i] = video.snippet;
+			})
+			$scope.$apply();
+     });
 	};
 
 	function cacheAndAddVideos(queueArr){

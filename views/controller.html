@@ -4,33 +4,85 @@
     <title>lan party</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/custom.css">
+    <script src="/js/jquery.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
   </head>
   <body ng-controller="PlaylistCtrl">
-    <div class="container">
-      <input type="button" value="Skip Song" ng-click="skipSong()" width='100px'/>
-      <table class="table">
-		  	<tr>
-		  		<th width='400px'>Video title</th>
-		  		<th width='200px'>Length</th>
-		  		<th width='100px'>Remove</th>
-		  		<th width='100px'>Bring to front</th>
-		  		<th width='100px'>Push to back</th>
-		  	</tr>
-		  	<tr ng-repeat="song in playlist">
-		  		<td>{{song.title}}</td>
-		  		<td>{{song.duration | convert_time | seconds_to_string}}</td>
-		  		<td><input type="button" value="delete" ng-click="removeSong(song)" /></td>
-		  		<td><input type="button" value="bring to front" ng-click="bringToFront(song)" /></td>
-		  		<td><input type="button" value="push to back" ng-click="pushToBack(song)" /></td>
-		  	</tr>
-		  </table>
-		  <form>
-      	<label>Id</label> 
-        <input type="text" name="name" ng-model="newSong.id"/>
-        <input type="button" value="Save" ng-click="saveSong()" />
-      </form>
+    <div class="container" id="mainContent">
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <h3 class="panel-title">Current video: {{playlist[0].title}}</h3>
+        </div>
+        <div class="panel-body">
+          <input type="button" class="btn-small btn-primary" value="Skip Song" ng-click="skipSong()" width='100px'/>
+        </div>
+      </div>
+      <div class='panel panel-default'>
+        <div class='panel-heading'>
+          <h3 class="panel-title">
+            <a role="button" data-toggle="collapse" data-target="#currentPlaylistBody">
+              Current song queue
+            </a>
+          </h3>
+        </div>
+        <div id="currentPlaylistBody" class='panel-collapse collapse in' style="max-height: 500px;overflow-y:scroll;">
+          <div class="panel-body">
+            <table class="table table-hover table-condensed">
+              <thead>
+                <tr>
+                  <th width='400px'>Video title</th>
+                  <th width='200px'>Length</th>
+                  <th width='100px'>Remove</th>
+                  <th width='100px'>Bring to front</th>
+                  <th width='100px'>Push to back</th>
+                </tr>
+              <thead>
+              <tbody>
+                <tr ng-repeat="song in playlist" ng-show="$index != 0">
+                  <td>{{song.title}}</td>
+                  <td>{{song.duration | convert_time | seconds_to_string}}</td>
+                  <td><input type="button" class="btn-small btn-primary" value="delete" ng-click="removeSong(song)" /></td>
+                  <td><input type="button" class="btn-small btn-primary" value="bring to front" ng-click="bringToFront(song)" /></td>
+                  <td><input type="button" class="btn-small btn-primary" value="push to back" ng-click="pushToBack(song)" /></td>
+                </tr>
+              <tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div class="panel panel-default" id="search">
+      <div class="panel-heading">
+        <form class='form-inline'>
+          <div class='form-group'>
+            <input type="text" class="form-control" ng-model="queryStr" placeholder="Search Youtube For Videos...">
+          </div>
+          <button type="submit" class="btn btn-primary pull-right" data-toggle="collapse" href="#collapseSearch" ng-click="search(queryStr)">Search</button>      
+        </form>
+       </div>
+      <div id="collapseSearch" class="panel-collapse collapse" style="max-height: 500px;overflow-y: scroll;">
+        <div class="panel-body">
+          <table class="table table-hover table-condensed">
+              <thead>
+                <tr>
+                  <th width='400px'>Video title</th>
+                  <th width='200px'>Channel</th>
+                  <th width='100px'>Add to queue</th>
+                </tr>
+              <thead>
+              <tbody>
+                <tr ng-repeat="song in searchResults">
+                  <td>{{song.title}}</td>
+                  <td>{{song.channelTitle}}</td>
+                  <td><input type="button" class="btn-small btn-primary" value="Add to queue" ng-click="saveSong(song.id)" data-toggle="collapse" href="#collapseSearch" /></td>
+                </tr>
+              <tbody>
+            </table>  
+        </div>
+      </div>
+    </div>
+
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 		<script src="/js/mainPage.js"></script>

@@ -2,3 +2,36 @@ iframe {
 	display: block; 
 	margin: 0 auto; 
 }
+
+table > thead{
+  border: 2px solid #dddddd;
+  border-top-width:0px;
+  border-right-width:0px;
+  border-left-width:0px;
+}
+
+
+table > tbody > tr {
+  border: 1px solid #dddddd;
+  border-top-width:0px;
+  border-right-width:0px;
+  border-left-width:0px;
+}
+
+#search {
+	position: fixed;
+	margin-bottom: 0px;
+  bottom: 0;
+  width: 100%; 
+}
+
+#mainContent{
+	margin-bottom: 100px;
+}
+
+.panel-title a {
+    text-align: center;
+    width: 100%;
+    display: block;
+    outline: none;
+}
