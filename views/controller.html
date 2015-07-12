@@ -1,6 +1,7 @@
 <!doctype html>
 <html ng-app="helloApp">
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>lan party</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/custom.css">
@@ -8,13 +9,14 @@
     <script src="/js/bootstrap.min.js"></script>
   </head>
   <body ng-controller="PlaylistCtrl">
-    <div class="container" id="mainContent">
+    <div class="container col-sm-12" id="mainContent">
       <div class="panel panel-primary">
         <div class="panel-heading">
           <h3 class="panel-title">Current video: {{playlist[0].title}}</h3>
         </div>
         <div class="panel-body">
           <input type="button" class="btn-small btn-primary" value="Skip Song" ng-click="skipSong()" width='100px'/>
+          <input type="button" class="btn-small btn-primary" value="Pause Song" ng-click="pauseSong()" width='100px'/>
         </div>
       </div>
       <div class='panel panel-default'>
@@ -30,55 +32,68 @@
             <table class="table table-hover table-condensed">
               <thead>
                 <tr>
-                  <th width='400px'>Video title</th>
-                  <th width='200px'>Length</th>
-                  <th width='100px'>Remove</th>
-                  <th width='100px'>Bring to front</th>
-                  <th width='100px'>Push to back</th>
+                  <th class='col-sm-7'>Video title</th>
+                  <th class='col-sm-2'>Length</th>
+                  <th class='col-sm-1'>Options</th>
                 </tr>
               <thead>
               <tbody>
                 <tr ng-repeat="song in playlist" ng-show="$index != 0">
-                  <td>{{song.title}}</td>
+                  <td><img src="{{song.thumbnails.default.url}}" width='40' height='33'>{{song.title}}</td>
                   <td>{{song.duration | convert_time | seconds_to_string}}</td>
-                  <td><input type="button" class="btn-small btn-primary" value="delete" ng-click="removeSong(song)" /></td>
-                  <td><input type="button" class="btn-small btn-primary" value="bring to front" ng-click="bringToFront(song)" /></td>
-                  <td><input type="button" class="btn-small btn-primary" value="push to back" ng-click="pushToBack(song)" /></td>
+                  <td>
+                    <div class="dropdown">
+                      <button type="button" class="btn-small btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Options <span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dLabel">
+                        <li><a ng-click="removeSong(song)">delete</a></li>
+                        <li><a ng-click="bringToFront(song)">bring to front</a></li>
+                        <li><a ng-click="pushToBack(song)">push to back</a></li>
+                      </ul>
+                    </div>
+                  </td>
                 </tr>
               <tbody>
             </table>
+            <div ng-show="playlist.length == 1"><h3>Nothing queued!</h3></div>
+            <h3>You can add more videos using the search bar below.</h3>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="panel panel-default" id="search">
-      <div class="panel-heading">
-        <form class='form-inline'>
-          <div class='form-group'>
-            <input type="text" class="form-control" ng-model="queryStr" placeholder="Search Youtube For Videos...">
+    <div class="panel panel-default col-sm-12" id="search">
+      <div class="panel-heading col-sm-12">
+        <form class='form-inline col-sm-12'>
+          <div class='form-group col-sm-9'>
+            <input type="text" class="form-control" ng-model="queryStr" style='width:100%' placeholder="Search Youtube For Videos...">
           </div>
-          <button type="submit" class="btn btn-primary pull-right" data-toggle="collapse" href="#collapseSearch" ng-click="search(queryStr)">Search</button>      
+          <div class='pull-right col-sm-3'>
+            <button type="submit" class="btn btn-primary" ng-click="search(queryStr)">Search</button>
+            <button type="submit" class="btn btn-primary" data-toggle="collapse" href="#collapseSearch">Expand results</button>
+          </div>
         </form>
        </div>
-      <div id="collapseSearch" class="panel-collapse collapse" style="max-height: 500px;overflow-y: scroll;">
-        <div class="panel-body">
-          <table class="table table-hover table-condensed">
+      <div id="collapseSearch" class="panel-collapse collapse col-sm-12" style="max-height: 50vh;overflow-y: scroll;">
+        <div class="panel-body col-sm-12">
+          <table class="table table-hover table-condensed col-sm-12">
               <thead>
                 <tr>
-                  <th width='400px'>Video title</th>
-                  <th width='200px'>Channel</th>
-                  <th width='100px'>Add to queue</th>
+                  <th class='col-sm-7'>Video title</th>
+                  <th class='col-sm-2'>Channel</th>
+                  <th class='col-sm-1'>Add to queue</th>
                 </tr>
               <thead>
               <tbody>
                 <tr ng-repeat="song in searchResults">
-                  <td>{{song.title}}</td>
+                  <td><img src="{{song.thumbnails.default.url}}" width='40' height='33'>{{song.title}}</td>
                   <td>{{song.channelTitle}}</td>
-                  <td><input type="button" class="btn-small btn-primary" value="Add to queue" ng-click="saveSong(song.id)" data-toggle="collapse" href="#collapseSearch" /></td>
+                  <td><input type="button" class="btn-small btn-primary" value="Add to queue" ng-click="saveSong(song.id)"/></td>
                 </tr>
               <tbody>
-            </table>  
+            </table>
+            <a ng-click="loadMoreResults()">Load More Results...</a>
         </div>
       </div>
     </div>

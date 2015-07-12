@@ -1,4 +1,4 @@
-var API_KEY = 'YOUR KEY HERE';
+var API_KEY = 'AIzaSyBWxb8QzNTy47Y_PVlWDmRhQ0ymcsp6JKk';
 
 var socket = io();
 
@@ -34,6 +34,9 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	$scope.newSong = {};
 	$scope.queryStr = '';
 
+	var oldQueryStr = '';
+	var nextPageToken = '';
+
 	socket.on('current queue', function(queueArr){
 		cacheAndAddVideos(queueArr);
 
@@ -52,10 +55,6 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	}
 
 	$scope.removeSong = function(song){
-		delete $scope.playlist[$scope.cachedResponces[song.id].index];
-		delete $scope.cachedResponces[song.id];
-		console.log($scope.playlist);
-		$scope.$apply();
 		socket.emit('delete song by id', song.id);
 	}
 
@@ -71,18 +70,43 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 		socket.emit('add song', songId);
 	};
 
+	$scope.pauseSong = function(){
+		socket.emit('pause song');
+	};
+
 	$scope.search = function(queryStr){
 		$scope.searchResults = [];
-		var responsePromise = $http.get("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+queryStr+"&maxResults=50&key="+API_KEY);
+		oldQueryStr = queryStr;
+		var responsePromise = $http.get("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+queryStr+"&maxResults=25&key="+API_KEY);
 	
 		responsePromise.success(function(data, status, headers, config) {
+		  nextPageToken = data.nextPageToken;
 			data.items.forEach(function(video, i){
 				video.snippet.id = video.id.videoId;
-				$scope.searchResults[i] = video.snippet;
+				$scope.searchResults.push(video.snippet);
 			})
 			$scope.$apply();
      });
 	};
+
+	$scope.loadMoreResults = function(){
+		var responsePromise = $http.get("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+oldQueryStr+"&pageToken="+nextPageToken+"&maxResults=25&key="+API_KEY);
+	
+		responsePromise.success(function(data, status, headers, config) {
+		  nextPageToken = data.nextPageToken;
+			data.items.forEach(function(video, i){
+				video.snippet.id = video.id.videoId;
+				$scope.searchResults.push(video.snippet);
+			})
+			$scope.$apply();
+     });
+	}
+
+	socket.on('pause song', function(){
+		if(player){
+			player.pauseVideo();
+		}
+	})
 
 	function cacheAndAddVideos(queueArr){
 		$scope.playlist.splice(0, queueArr.length);
@@ -144,4 +168,8 @@ helloApp.filter('seconds_to_string', function() {
 
     return (hours > 0 ? hours + ' hours. ' : '') +  minutes + ' minutes. ' + seconds + ' seconds.';
 	}
+});
+
+$(document).ready(function(){
+	
 });

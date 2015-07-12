@@ -6,7 +6,10 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var room = require('./room')
+var room = require('./room');
+var events = require('events');
+
+var eventEmitter = new events.EventEmitter();
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -43,38 +46,38 @@ io.on('connection', function(socket){
   console.log('a user connected');
 
   setInterval(function(){
-    socket.emit('current queue', room.getQueue());
+    emitQueue();
   }, 1000);
 
   socket.on('get queue', function(){
-  	socket.emit('current queue', room.getQueue());
+    emitQueue();
   });
 
   socket.on('pop top of queue', function(songId){
     if(songId === room.getQueue()[0]){
       room.pushTopSongToEnd();
     }
-  	socket.broadcast.emit('current queue', room.getQueue());
+    emitQueue();
   });
 
   socket.on('delete song by id', function(id){
   	var pl = room.getQueue();
   	var i = pl.indexOf(id);
   	room.deleteSong(i);
-  	socket.broadcast.emit('current queue', room.getQueue());
+    emitQueue();
   });
 
   socket.on('add song', function(newId){
   	room.addSongToQueue(newId);
-  	socket.broadcast.emit('current queue', room.getQueue());
+    emitQueue();
   });
 
   socket.on('bring to front', function(id){
   	var pl = room.getQueue();
   	var i = pl.indexOf(id);
 
-  	room.moveSong(i, 1)
-  	socket.broadcast.emit('current queue', room.getQueue());
+  	room.moveSong(i, 1);
+    emitQueue();
   });
 
   socket.on('push to back', function(id){
@@ -82,14 +85,22 @@ io.on('connection', function(socket){
   	var i = pl.indexOf(id);
   	room.deleteSong(i);
   	room.addSongToQueue(id);
-  	socket.broadcast.emit('current queue', room.getQueue());
+    emitQueue();
+  });
+
+  socket.on('pause song', function(){
+    socket.broadcast.emit('pause song');
   })
+
+  function emitQueue(){
+    socket.emit('current queue', room.getQueue());
+  }
 });
 
 http.listen(3000, function(){
   console.log('listening on *:3000');
+  eventEmitter.emit('ready');
 });
 
-
-
+module.exports = eventEmitter;
 
