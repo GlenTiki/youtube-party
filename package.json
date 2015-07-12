@@ -1,7 +1,7 @@
 {
-  "name": "lan-party",
+  "name": "youtube-party",
   "version": "1.0.0",
-  "main": "./main.js",
+  "main": "main.js",
   "author": "Glen Keane",
   "license": "MIT",
   "dependencies": {

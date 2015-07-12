@@ -20,11 +20,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.get('/', function(req, res){
-  res.sendfile('./views/index.html');
+  res.sendfile(__dirname+'/views/index.html');
 });
 
 app.get('/client', function(req, res){
-  res.sendfile('./views/controller.html');
+  res.sendfile(__dirname+'/views/controller.html');
 });
 
 // catch 404 and forward to error handler
@@ -36,10 +36,7 @@ app.use(function(req, res, next) {
 
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: err
-  });
+  res.sendfile(__dirname+'/views/error.html')
 });
 
 io.on('connection', function(socket){
