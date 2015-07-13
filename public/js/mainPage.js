@@ -2,7 +2,7 @@ var API_KEY = 'AIzaSyBWxb8QzNTy47Y_PVlWDmRhQ0ymcsp6JKk';
 
 var socket = io();
 
-var player, lastEvent;
+var player, lastEvent, justJoined;
 function onYouTubeIframeAPIReady() {
 	player = new YT.Player('player', {
 		height: '390',
@@ -17,13 +17,16 @@ function onYouTubeIframeAPIReady() {
 function onPlayerReady(event) {
   event.target.playVideo();
   socket.emit('player added');
+  justJoined = true;
   var oldTime = 0;
+
+  setTimeout(function(){
+		justJoined = false;
+  }, 2000);
 
   setInterval(function(){
   	if(player.getCurrentTime() - oldTime > 1.2 ||
   		  player.getCurrentTime() - oldTime < -1.2){
-  		console.log('forward', player.getCurrentTime() - oldTime);
-  	  console.log('back', player.getCurrentTime() - oldTime);
   		var evt = {
   			data: player.getPlayerState(),
   			target: {
@@ -58,6 +61,7 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 
 	var oldQueryStr = '';
 	var nextPageToken = '';
+	var ignoreEventUpdate = false;
 
 	socket.on('current queue', function(queueArr){
 		cacheAndAddVideos(queueArr);
@@ -72,24 +76,47 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	});
 
 	socket.on('player state change', function(event){
-		if(player){
-			if(event.target.B.currentTime > player.getCurrentTime()+2 ||
-				 event.target.B.currentTime < player.getCurrentTime()-2){
-		  	player.seekTo(event.target.B.currentTime);
-	  	}
-			if(event.data == YT.PlayerState.PAUSED){
-				player.pauseVideo();
+		if(!ignoreEventUpdate){
+			if(player){
+				if(event.target.B.currentTime > player.getCurrentTime()+2 ||
+					 event.target.B.currentTime < player.getCurrentTime()-2){
+			  	player.seekTo(event.target.B.currentTime);
+	  		}
+				if(event.data == YT.PlayerState.PAUSED){
+					player.pauseVideo();
+				}
+				if(event.data == YT.PlayerState.PLAYING){
+					player.playVideo();
+				}
 			}
-			if(event.data == YT.PlayerState.PLAYING){
-				player.playVideo();
+			if(event.data == 1){
+				$scope.playing = true;
+			} else if(event.data == 2){
+				$scope.playing = false;
 			}
-		}
-		if(event.data == 1){
-			$scope.playing = true;
-		} else if(event.data == 2){
-			$scope.playing = false;
 		}
 	});
+
+	socket.on('new player added', function(){
+		ignoreEventUpdate = true;
+
+		setTimeout(function(){
+			ignoreEventUpdate = false;
+
+			if(!justJoined && player){
+				var evt = {
+  				data: player.getPlayerState(),
+  				target: {
+  					B: {
+							currentTime: player.getCurrentTime()
+  					}
+  				}
+  			};
+
+				socket.emit('player state change', evt);
+			}
+		}, 1500);
+	})
 
 	$scope.skipSong = function(){
 		socket.emit('pop top of queue', $scope.playlist[0].id);

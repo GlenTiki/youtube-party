@@ -47,6 +47,7 @@ io.on('connection', function(socket){
 
   socket.on('player added', function(){
     emitQueue();
+    socket.broadcast.emit('new player added');
   });
 
   socket.on('player state change', function(evt){
