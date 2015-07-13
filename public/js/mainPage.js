@@ -20,8 +20,10 @@ function onPlayerReady(event) {
   var oldTime = 0;
 
   setInterval(function(){
-  	if(player.getCurrentTime() - oldTime > 0.2 ||
-  		  player.getCurrentTime() - oldTime < -0.2){
+  	if(player.getCurrentTime() - oldTime > 1.2 ||
+  		  player.getCurrentTime() - oldTime < -1.2){
+  		console.log('forward', player.getCurrentTime() - oldTime);
+  	  console.log('back', player.getCurrentTime() - oldTime);
   		var evt = {
   			data: player.getPlayerState(),
   			target: {
@@ -223,12 +225,10 @@ helloApp.filter('seconds_to_string', function() {
 
 $(document).ready(function(){
 	$('#search').click(function(){
-		console.log('clicked');
 		$('#collapseSearch').collapse('show');
 	});
 
 	$('#mainContent').click(function(){
-		console.log('clicked other');
 		$('#collapseSearch').collapse('hide');
 	});
 
