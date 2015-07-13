@@ -1,9 +1,15 @@
 var fs = require('fs');
 
-var queue = require('./currQueue');
+var queue = [];
+try{
+  queue = require(process.cwd() + '/config/ytpt-currQueue.js');
+} catch(err){
+	console.error('Cannot find a valid currQueue file');
+}
 
 exports.addSongToQueue = function(song){
 	if(queue.indexOf(song) === -1) queue.push(song);
+
 	writeQueueToFile()
 }
 
@@ -30,12 +36,15 @@ exports.deleteSong = function(currentLocation){
 	writeQueueToFile()
 }
 
-var writeQueueToFile = function(){
+function writeQueueToFile(){
 	var buff = new Buffer('module.exports = ' + JSON.stringify(queue) + ';');
-	var fd = __dirname + '/currQueue.js';
-	
+	var fd = process.cwd() + '/config/ytpt-currQueue.js';
+
 	fs.writeFile(fd, buff, function(err){
-		if(err) {console.log('problem writing to file');}
-		console.log('finished write to file');
+		if(err) {
+			console.error('problem writing to file', err);
+		}
+		console.log('finished write to file function');
 	});
+
 }

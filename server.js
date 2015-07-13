@@ -27,7 +27,6 @@ app.get('/client', function(req, res){
   res.sendfile(__dirname+'/views/controller.html');
 });
 
-// catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
@@ -46,11 +45,17 @@ io.on('connection', function(socket){
     emitQueue();
   }, 1000);
 
-  socket.on('get queue', function(){
+  socket.on('player added', function(){
     emitQueue();
   });
 
+  socket.on('player state change', function(evt){
+    console.log('player state changed...', evt);
+    socket.broadcast.emit('player state change', evt);
+  });
+
   socket.on('pop top of queue', function(songId){
+    console.log('pop top of queue', songId, room.getQueue()[0]);
     if(songId === room.getQueue()[0]){
       room.pushTopSongToEnd();
     }
@@ -87,6 +92,10 @@ io.on('connection', function(socket){
 
   socket.on('pause song', function(){
     socket.broadcast.emit('pause song');
+  })
+
+  socket.on('play song', function(){
+    socket.broadcast.emit('play song');
   })
 
   function emitQueue(){

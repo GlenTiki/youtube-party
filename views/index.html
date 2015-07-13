@@ -1,18 +1,26 @@
 <!doctype html>
 <html ng-app="helloApp">
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>youtube party</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/custom.css">
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="/js/angular.min.js"></script>
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="/js/youtubeiframeapi.min.js"></script>
+    <script type="text/javascript" src="/js/mainPage.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   </head>
   <body ng-controller="PlaylistCtrl">
 
      <div class="container col-sm-12" id="mainContent">
       <div class="jumbotron">
-        <div id="player"></div>
+        <h3>Time for a youtube party!</h3>
+        <div id="player">
+        </div>
       </div>
       <div class="panel panel-primary">
         <div class="panel-heading">
@@ -69,12 +77,12 @@
     <div class="panel panel-default col-sm-12" id="search">
       <div class="panel-heading col-sm-12">
         <form class='form-inline col-sm-12'>
-          <div class='form-group col-sm-9'>
+          <div class='form-group col-sm-8'>
             <input type="text" class="form-control" ng-model="queryStr" style='width:100%' placeholder="Search Youtube For Videos...">
           </div>
-          <div class='pull-right col-sm-3'>
+          <div class='pull-right col-sm-4'>
             <button type="submit" class="btn btn-primary" ng-click="search(queryStr)">Search</button>
-            <button type="submit" class="btn btn-primary" data-toggle="collapse" href="#collapseSearch">Expand results</button>
+            <button type="submit" class="btn btn-primary" data-toggle="collapse" href="#collapseSearch" id='search-expand'>Expand</a>
           </div>
         </form>
        </div>
@@ -96,14 +104,9 @@
                 </tr>
               <tbody>
             </table>
-            <a ng-click="loadMoreResults()">Load More Results...</a>
+            <a ng-click="loadMoreResults()" ng-show='searchResults.length > 0'>Load More Results...</a>
         </div>
       </div>
     </div>
-
-    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
-		<script src="/js/mainPage.js"></script>
   </body>
 </html>

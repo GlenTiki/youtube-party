@@ -2,10 +2,10 @@ var API_KEY = 'AIzaSyBWxb8QzNTy47Y_PVlWDmRhQ0ymcsp6JKk';
 
 var socket = io();
 
-var player;
+var player, lastEvent;
 function onYouTubeIframeAPIReady() {
 	player = new YT.Player('player', {
- 	  height: '390',
+		height: '390',
  	  width: '640',
  	  events: {
  	    'onReady': onPlayerReady,
@@ -16,12 +16,31 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {
   event.target.playVideo();
-  socket.emit('get queue');
+  socket.emit('player added');
+  var oldTime = 0;
+
+  setInterval(function(){
+  	if(player.getCurrentTime() - oldTime > 0.2 ||
+  		  player.getCurrentTime() - oldTime < -0.2){
+  		var evt = {
+  			data: player.getPlayerState(),
+  			target: {
+  				B: {
+						currentTime: player.getCurrentTime()
+  				}
+  			}
+  		}
+			socket.emit('player state change', evt);
+  	}
+  	oldTime = player.getCurrentTime();
+  }, 1000)
 }
 
 function onPlayerStateChange(event) {
 	if(event.data == YT.PlayerState.ENDED){
   	socket.emit('pop top of queue', player.getVideoData().video_id);
+	} else {
+  	socket.emit('player state change', event);
 	}
 }
 
@@ -33,6 +52,7 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	$scope.cachedResponces = {};
 	$scope.newSong = {};
 	$scope.queryStr = '';
+	$scope.playing = true;
 
 	var oldQueryStr = '';
 	var nextPageToken = '';
@@ -43,11 +63,30 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 		if(player){
 			if(player.getVideoData().video_id !== queueArr[0]){
 				player.loadVideoById(queueArr[0]);
-        //player.stopVideo();
 			}
 		}
 
 		$scope.$apply();
+	});
+
+	socket.on('player state change', function(event){
+		if(player){
+			if(event.target.B.currentTime > player.getCurrentTime()+2 ||
+				 event.target.B.currentTime < player.getCurrentTime()-2){
+		  	player.seekTo(event.target.B.currentTime);
+	  	}
+			if(event.data == YT.PlayerState.PAUSED){
+				player.pauseVideo();
+			}
+			if(event.data == YT.PlayerState.PLAYING){
+				player.playVideo();
+			}
+		}
+		if(event.data == 1){
+			$scope.playing = true;
+		} else if(event.data == 2){
+			$scope.playing = false;
+		}
 	});
 
 	$scope.skipSong = function(){
@@ -72,6 +111,10 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 
 	$scope.pauseSong = function(){
 		socket.emit('pause song');
+	};
+
+	$scope.playSong = function(){
+		socket.emit('play song');
 	};
 
 	$scope.search = function(queryStr){
@@ -108,6 +151,12 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 		}
 	})
 
+	socket.on('play song', function(){
+		if(player){
+			player.playVideo();
+		}
+	})
+
 	function cacheAndAddVideos(queueArr){
 		$scope.playlist.splice(0, queueArr.length);
 		queueArr.forEach(function(videoId, index){
@@ -132,6 +181,8 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 helloApp.filter('convert_time', function() {
 
   return function(duration) {
+  	if(!duration) return;
+
     var a = duration.match(/\d+/g);
     if (duration.indexOf('M') >= 0 && duration.indexOf('H') == -1 && duration.indexOf('S') == -1) {
         a = [0, a[0], 0];
@@ -171,5 +222,21 @@ helloApp.filter('seconds_to_string', function() {
 });
 
 $(document).ready(function(){
-	
+	$('#search').click(function(){
+		console.log('clicked');
+		$('#collapseSearch').collapse('show');
+	});
+
+	$('#mainContent').click(function(){
+		console.log('clicked other');
+		$('#collapseSearch').collapse('hide');
+	});
+
+	$('#collapseSearch').on('shown.bs.collapse', function(){
+		$('#search-expand').html('Hide');
+	});
+
+	$('#collapseSearch').on('hidden.bs.collapse', function(){
+		$('#search-expand').html('Expand');
+	});
 });

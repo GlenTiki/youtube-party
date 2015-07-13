@@ -1,5 +1,6 @@
 var app = require('app');
-var server = require('./index.js');
+
+var server = require('./server.js');
 
 var BrowserWindow = require('browser-window'); 
 
@@ -16,7 +17,7 @@ app.on('window-all-closed', function() {
 var numReady = 0;
 var ready = function(){
 	if(++numReady < 2) return;
-	mainWindow = new BrowserWindow({width: 800, height: 600});
+	mainWindow = new BrowserWindow({width: 800, height: 600, "node-integration": false});
 
   mainWindow.loadUrl('http://localhost:3000/');
 

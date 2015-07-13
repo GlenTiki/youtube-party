@@ -1,7 +1,7 @@
 {
-  "name": "youtube-party",
+  "name": "Youtube-party",
   "version": "1.0.0",
-  "main": "main.js",
+  "main": "./main.js",
   "author": "Glen Keane",
   "license": "MIT",
   "dependencies": {
@@ -10,7 +10,6 @@
     "debug": "~2.1.1",
     "express": "~4.12.2",
     "morgan": "~1.5.1",
-    "ps-nodejs": "0.0.7",
     "serve-favicon": "~2.2.0",
     "socket.io": "^1.3.5"
   }
