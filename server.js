@@ -6,12 +6,15 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var room = require('./room');
 var events = require('events');
+
+var room = require('./room');
 
 var netIfaces = require('os').getNetworkInterfaces();
 
 var eventEmitter = new events.EventEmitter();
+
+var lastState;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -26,7 +29,7 @@ app.get('/', function(req, res){
 });
 
 app.get('/client', function(req, res){
-  res.sendfile(__dirname+'/views/controller.html');
+  res.sendfile(__dirname+'/views/index.html');
 });
 
 app.use(function(req, res, next) {
@@ -55,12 +58,16 @@ io.on('connection', function(socket){
   });
 
   socket.on('player state change', function(evt){
-    console.log('player state changed...', evt);
+    console.log('player state changed');
     socket.broadcast.emit('player state change', evt);
+    lastState = evt;
+  });
+
+  socket.on('controller joined', function(evt){
+    if(lastState) socket.emit('player state change', lastState)
   });
 
   socket.on('pop top of queue', function(songId){
-    console.log('pop top of queue', songId, room.getQueue()[0]);
     if(songId === room.getQueue()[0]){
       room.pushTopSongToEnd();
     }

@@ -17,34 +17,68 @@
   <body ng-controller="PlaylistCtrl">
 
      <div class="container col-sm-12" id="mainContent">
-      <div class="jumbotron">
-        <h3>Time for a youtube party!</h3>
-        <div id="player">
+
+      <div class="jumbotron" ng-show='!isController'>
+        <h1>Time for a youtube party!</h1>
+        <div ng-show='playlist.length > 0'>
+          <div id="player"></div>
         </div>
-        <div class='container' ng-show='address'>
-          <div class='well col-sm-6'>
-            <h3>Get your friends to scan the code below to listen the server!</h3>
-            <div class='well white-well'>
-              <img class="white-well" src='http://api.qrserver.com/v1/create-qr-code/?data={{address}}&size=220x220&margin=0' />
-            </div>
+        <div ng-show='playlist.length == 0'>
+          <h2>Nothing to play... add some music at the bottom of the page to get started<h2>
+        </div>
+        <div class='panel panel-default' ng-show='address'>
+          <div class='panel-heading'>
+            <h3>
+              <a role="button" data-toggle="collapse" data-target="#qrCodesPanel">
+                Get your friends to scan the codes here to listen to the server or control it!
+              </a>
+            </h3>
           </div>
-          <div class='well col-sm-6'>
-            <h3>Get your friends to scan the code below to control the server!</h3>
-            <div class='well white-well'>
-              <img class="white-well" src='http://api.qrserver.com/v1/create-qr-code/?data={{address}}client&size=220x220&margin=0' />
+          <div id="qrCodesPanel" class='panel-body panel-collapse collapse in'>
+            <div class='container col-sm-6'>
+              <h3> use the code below to listen in.</h3>
+              <div class='well white-well'>
+                <img class="white-well" src='http://api.qrserver.com/v1/create-qr-code/?data={{address}}&size=220x220&margin=0' />
+              </div>
             </div>
+            <div class='container col-sm-6'>
+              <h3> use the code below to control the music.</h3>
+              <div class='well white-well'>
+                <img class="white-well" src='http://api.qrserver.com/v1/create-qr-code/?data={{address}}client&size=220x220&margin=0' />
+              </div>
+            </div>
+            <h4>alternatively you can connect to 'http://{{address}}' to listen in, or 'http://{{address}}client' to control it!</h4>
           </div>
-          <h4>alternatively you can connect to 'http://{{address}}' to listen in, or 'http://{{address}}client' to control it!</h4>
         </div>
       </div>
+
       <div class="panel panel-primary">
         <div class="panel-heading">
-          <h3 class="panel-title">Current video: {{playlist[0].title}}</h3>
+          <div class="panel-title">
+            <h3 ng-show='playlist.length > 0'>
+              Current video: {{playlist[0].title}}
+            </h3>
+            <h3 ng-show='playlist.length == 0'>
+              Nothing to play yet...
+            </h3>
+          </div>
         </div>
         <div class="panel-body">
-          <input type="button" class="btn-small btn-primary" value="Skip Song" ng-click="skipSong()" width='100px'/>
+          <button class="btn btn-primary" ng-click="skipSong()" width='110px' id='skipSongButton' ng-show='playlist.length > 1'>
+            Skip song
+          </button>
+          <button class="btn btn-primary" ng-click="pauseSong()" width='110px' id='pauseSongButton' ng-show='isController && playing && playlist.length > 0'>
+            Pause song 
+          </button>
+          <button class="btn btn-primary" ng-click="playSong()" width='110px' id='playSongButton' ng-show='isController && !playing && playlist.length > 0'>
+            Play song 
+          </button>
+          <button class="btn btn-primary" ng-click="removeSong(playlist[0])" width='110px' id='deleteSongButton' ng-show='playlist.length > 0'>
+            Remove song
+          </button>
         </div>
       </div>
+
       <div class='panel panel-default'>
         <div class='panel-heading'>
           <h3 class="panel-title">
@@ -55,7 +89,7 @@
         </div>
         <div id="currentPlaylistBody" class='panel-collapse collapse in' style="max-height: 500px;overflow-y:scroll;">
           <div class="panel-body">
-            <table class="table table-hover table-condensed">
+            <table class="table table-hover table-condensed" ng-show="playlist.length > 1">
               <thead>
                 <tr>
                   <th class='col-sm-7'>Video title</th>
@@ -82,8 +116,8 @@
                 </tr>
               <tbody>
             </table>
-            <div ng-show="playlist.length == 1"><h3>Nothing queued!</h3></div>
-            <h3>You can add more videos using the search bar below.</h3>
+            <div ng-show="playlist.length <= 1"><h4>Nothing queued!</h4></div>
+            <p>You can add more videos using the search bar below.</p>
           </div>
         </div>
       </div>
@@ -97,7 +131,7 @@
           </div>
           <div class='pull-right col-sm-4'>
             <button type="submit" class="btn btn-primary" ng-click="search(queryStr)">Search</button>
-            <button type="submit" class="btn btn-primary" data-toggle="collapse" href="#collapseSearch" id='search-expand'>Expand</a>
+            <button class="btn btn-primary" data-toggle="collapse" href="#collapseSearch" id='search-expand'>Expand</button>
           </div>
         </form>
        </div>
@@ -115,7 +149,7 @@
                 <tr ng-repeat="song in searchResults">
                   <td><img src="{{song.thumbnails.default.url}}" width='40' height='33'>{{song.title}}</td>
                   <td>{{song.channelTitle}}</td>
-                  <td><input type="button" class="btn-small btn-primary" value="Add to queue" ng-click="saveSong(song.id)"/></td>
+                  <td><input type="button" class="btn-small btn-primary" value="Add to queue" ng-click="addSong(song.id)"/></td>
                 </tr>
               <tbody>
             </table>

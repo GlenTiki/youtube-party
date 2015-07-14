@@ -1,31 +1,19 @@
+body {
+  font-family: Palatino,"Palatino Linotype","Palatino LT STD","Book Antiqua",Georgia,serif;
+}
+
 iframe { 
 	display: block; 
 	margin: 0 auto; 
 }
 
+.jumbotron {
+  text-align: center;
+}
+
 .panel-heading button{
   width:100px;
   max-width:100px;
-}
-
-.panel-heading a:after{
-    font-family:'Glyphicons Halflings';
-    content:"\e114";
-    float: right;
-    color: grey;
-}
-.panel-heading a.collapsed:after {
-    content:"\e080";
-}
-
-.panel-heading a:after{
-    font-family:'Glyphicons Halflings';
-    content:"\e114";
-    float: right;
-    color: grey;
-}
-.panel-heading a.collapsed:after {
-    content:"\e080";
 }
 
 table > thead{
@@ -64,4 +52,34 @@ table > tbody > tr {
 
 .white-well {
   background: white;
+  text-align: center;
+}
+
+#skipSongButton:after,
+#playSongButton:after,
+#pauseSongButton:after,
+.panel-heading a:after {
+  font-family:'Glyphicons Halflings';
+  float: right;
+}
+
+.panel-heading a:after{
+  color: grey;
+  content:"\e114";
+}
+
+.panel-heading a.collapsed:after {
+    content:"\e080";
+}
+
+#skipSongButton:after {
+  content:"\e077";
+}
+
+#playSongButton:after {
+  content:"\e072";
+}
+
+#pauseSongButton:after {
+  content:"\e073";
 }

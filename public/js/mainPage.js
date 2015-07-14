@@ -2,8 +2,13 @@ var API_KEY = 'AIzaSyBWxb8QzNTy47Y_PVlWDmRhQ0ymcsp6JKk';
 
 var socket = io();
 
+var isController = (window.location.href.indexOf('client') > -1);
+
 var player, lastEvent, justJoined;
+
 function onYouTubeIframeAPIReady() {
+	if(isController) return;
+
 	player = new YT.Player('player', {
 		height: '390',
  	  width: '640',
@@ -59,10 +64,70 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	$scope.queryStr = '';
 	$scope.playing = true;
 	$scope.address = '';
+	$scope.isController = isController;
 
 	var oldQueryStr = '';
 	var nextPageToken = '';
 	var ignoreEventUpdate = false;
+
+
+  if(isController) socket.emit('controller joined'); 
+
+	$scope.skipSong = function(){
+		socket.emit('pop top of queue', $scope.playlist[0].id);
+	}
+
+	$scope.removeSong = function(song){
+		socket.emit('delete song by id', song.id);
+	}
+
+	$scope.bringToFront = function(song){
+		socket.emit('bring to front', song.id);
+	}
+
+	$scope.pushToBack = function(song){
+		socket.emit('push to back', song.id);
+	}
+
+	$scope.addSong = function(songId){
+		socket.emit('add song', songId);
+	};
+
+	$scope.pauseSong = function(){
+		socket.emit('pause song');
+	};
+
+	$scope.playSong = function(){
+		socket.emit('play song');
+	};
+
+	$scope.search = function(queryStr){
+		$scope.searchResults = [];
+		oldQueryStr = queryStr;
+		var responsePromise = $http.get("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+queryStr+"&type=video&maxResults=25&key="+API_KEY);
+	
+		responsePromise.success(function(data, status, headers, config) {
+		  nextPageToken = data.nextPageToken;
+			data.items.forEach(function(video, i){
+				video.snippet.id = video.id.videoId;
+				$scope.searchResults.push(video.snippet);
+			})
+			$scope.$apply();
+     });
+	};
+
+	$scope.loadMoreResults = function(){
+		var responsePromise = $http.get("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+oldQueryStr+"&pageToken="+nextPageToken+"&type=video&maxResults=25&key="+API_KEY);
+	
+		responsePromise.success(function(data, status, headers, config) {
+		  nextPageToken = data.nextPageToken;
+			data.items.forEach(function(video, i){
+				video.snippet.id = video.id.videoId;
+				$scope.searchResults.push(video.snippet);
+			})
+			$scope.$apply();
+     });
+	}
 
 	socket.on('server address', function(add){
 		$scope.address = add;
@@ -121,63 +186,7 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 				socket.emit('player state change', evt);
 			}
 		}, 1500);
-	})
-
-	$scope.skipSong = function(){
-		socket.emit('pop top of queue', $scope.playlist[0].id);
-	}
-
-	$scope.removeSong = function(song){
-		socket.emit('delete song by id', song.id);
-	}
-
-	$scope.bringToFront = function(song){
-		socket.emit('bring to front', song.id);
-	}
-
-	$scope.pushToBack = function(song){
-		socket.emit('push to back', song.id);
-	}
-
-	$scope.saveSong = function(songId){
-		socket.emit('add song', songId);
-	};
-
-	$scope.pauseSong = function(){
-		socket.emit('pause song');
-	};
-
-	$scope.playSong = function(){
-		socket.emit('play song');
-	};
-
-	$scope.search = function(queryStr){
-		$scope.searchResults = [];
-		oldQueryStr = queryStr;
-		var responsePromise = $http.get("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+queryStr+"&maxResults=25&key="+API_KEY);
-	
-		responsePromise.success(function(data, status, headers, config) {
-		  nextPageToken = data.nextPageToken;
-			data.items.forEach(function(video, i){
-				video.snippet.id = video.id.videoId;
-				$scope.searchResults.push(video.snippet);
-			})
-			$scope.$apply();
-     });
-	};
-
-	$scope.loadMoreResults = function(){
-		var responsePromise = $http.get("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+oldQueryStr+"&pageToken="+nextPageToken+"&maxResults=25&key="+API_KEY);
-	
-		responsePromise.success(function(data, status, headers, config) {
-		  nextPageToken = data.nextPageToken;
-			data.items.forEach(function(video, i){
-				video.snippet.id = video.id.videoId;
-				$scope.searchResults.push(video.snippet);
-			})
-			$scope.$apply();
-     });
-	}
+	});
 
 	socket.on('pause song', function(){
 		if(player){
@@ -192,7 +201,7 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	})
 
 	function cacheAndAddVideos(queueArr){
-		$scope.playlist.splice(0, queueArr.length);
+		$scope.playlist.splice(0, (queueArr.length > 0 ? queueArr.length : 1));
 		queueArr.forEach(function(videoId, index){
 			if($scope.cachedResponces[videoId]){
 				$scope.cachedResponces[videoId].index = index;
@@ -210,10 +219,10 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 			}
 		});
 	}
+
 });
 
 helloApp.filter('convert_time', function() {
-
   return function(duration) {
   	if(!duration) return;
 
@@ -245,7 +254,6 @@ helloApp.filter('convert_time', function() {
 });
 
 helloApp.filter('seconds_to_string', function() {
-
   return function(seconds) {
     var hours = Math.floor(seconds/60/60)
     var minutes = Math.floor((seconds/60)%60)
@@ -256,6 +264,8 @@ helloApp.filter('seconds_to_string', function() {
 });
 
 $(document).ready(function(){
+	$('#qrCodesPanel').collapse("hide");
+
 	$('#search').click(function(){
 		$('#collapseSearch').collapse('show');
 	});
