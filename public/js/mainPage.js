@@ -58,10 +58,15 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	$scope.newSong = {};
 	$scope.queryStr = '';
 	$scope.playing = true;
+	$scope.address = '';
 
 	var oldQueryStr = '';
 	var nextPageToken = '';
 	var ignoreEventUpdate = false;
+
+	socket.on('server address', function(add){
+		$scope.address = add;
+	})
 
 	socket.on('current queue', function(queueArr){
 		cacheAndAddVideos(queueArr);

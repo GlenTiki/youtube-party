@@ -9,6 +9,8 @@ var bodyParser = require('body-parser');
 var room = require('./room');
 var events = require('events');
 
+var netIfaces = require('os').getNetworkInterfaces();
+
 var eventEmitter = new events.EventEmitter();
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -40,6 +42,8 @@ app.use(function(err, req, res, next) {
 
 io.on('connection', function(socket){
   console.log('a user connected');
+
+  socket.emit('server address', (netIfaces.wlan0[0].address || netIfaces.eth0[0].address)+':3000/');
 
   setInterval(function(){
     emitQueue();

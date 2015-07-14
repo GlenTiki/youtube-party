@@ -21,6 +21,21 @@
         <h3>Time for a youtube party!</h3>
         <div id="player">
         </div>
+        <div class='container' ng-show='address'>
+          <div class='well col-sm-6'>
+            <h3>Get your friends to scan the code below to listen the server!</h3>
+            <div class='well white-well'>
+              <img class="white-well" src='http://api.qrserver.com/v1/create-qr-code/?data={{address}}&size=220x220&margin=0' />
+            </div>
+          </div>
+          <div class='well col-sm-6'>
+            <h3>Get your friends to scan the code below to control the server!</h3>
+            <div class='well white-well'>
+              <img class="white-well" src='http://api.qrserver.com/v1/create-qr-code/?data={{address}}client&size=220x220&margin=0' />
+            </div>
+          </div>
+          <h4>alternatively you can connect to 'http://{{address}}' to listen in, or 'http://{{address}}client' to control it!</h4>
+        </div>
       </div>
       <div class="panel panel-primary">
         <div class="panel-heading">

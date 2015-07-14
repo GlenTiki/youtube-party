@@ -61,3 +61,7 @@ table > tbody > tr {
     display: block;
     outline: none;
 }
+
+.white-well {
+  background: white;
+}
