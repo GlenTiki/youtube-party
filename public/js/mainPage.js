@@ -77,7 +77,9 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	}
   else{ 
 	  $scope.playerHere = true;
-
+	  socket.on('reconnect', function(){
+	  	socket.emit('player still here');
+	  });
   	setInterval(function(){socket.emit('player still here');}, 10000); 
 	}
 
@@ -203,7 +205,9 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	});
 
 	socket.on('player here', function(isPlayerHere){
-		$scope.playerHere = isPlayerHere;
+		console.log('player here state', isPlayerHere);
+		if(isController) $scope.playerHere = isPlayerHere;
+		$scope.$apply();
 	});
 
 	socket.on('pause song', function(){

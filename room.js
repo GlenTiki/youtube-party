@@ -1,44 +1,52 @@
 var fs = require('fs');
 
 var queue = [];
+
+var configPath = process.resourcesPath || process.cwd() + '/config/'
+
 try{
-  queue = require(process.cwd() + '/config/ytpt-currQueue.js');
+  queue = require(configPath + 'ytpt-currQueue.js');
 } catch(err){
 	console.error('Cannot find a valid currQueue file');
 }
 
-exports.addSongToQueue = function(song){
+fs.exists(configPath, function(exists){
+	if(!exists) fs.mkdir(configPath);
+})
+
+function addSongToQueue(song){
 	if(queue.indexOf(song) === -1) queue.push(song);
+	else { moveSong(queue.indexOf(song), queue.length-1)};
 
 	writeQueueToFile()
 }
 
-exports.getQueue = function(){
+function getQueue(){
 	return queue;
 }
 
-exports.pushTopSongToEnd = function(){
+function pushTopSongToEnd(){
   var element = queue[0];
   queue.splice(0, 1);
   queue.push(element);
   writeQueueToFile()
 }
 
-exports.moveSong = function(currentLocation, newLocation){
+function moveSong(currentLocation, newLocation){
   var element = queue[currentLocation];
   queue.splice(currentLocation, 1);
   queue.splice(newLocation, 0, element);
   writeQueueToFile()
 }
 
-exports.deleteSong = function(currentLocation){
+function deleteSong(currentLocation){
 	queue.splice(currentLocation, 1);
 	writeQueueToFile()
 }
 
 function writeQueueToFile(){
 	var buff = new Buffer('module.exports = ' + JSON.stringify(queue) + ';');
-	var fd = process.cwd() + '/config/ytpt-currQueue.js';
+	var fd = configPath + 'ytpt-currQueue.js';
 
 	fs.writeFile(fd, buff, function(err){
 		if(err) {
@@ -46,5 +54,12 @@ function writeQueueToFile(){
 		}
 		console.log('finished write to file function');
 	});
-
 }
+
+module.exports = {
+	'addSongToQueue': addSongToQueue,
+	'getQueue': getQueue,
+	'pushTopSongToEnd': pushTopSongToEnd,
+	'moveSong': moveSong,
+  'deleteSong': deleteSong
+};

@@ -49,7 +49,7 @@ io.on('connection', function(socket){
 
   socket.emit('server address', ip+':3000/');
 
-  var playerStilHereTimeout;
+  var playerStillHereTimeout = setTimeout(function(){}, 0);
 
   setInterval(function(){
     emitQueue();
@@ -65,8 +65,12 @@ io.on('connection', function(socket){
 
   function verifyPlayerStillHereCountdown(){
     playerHere = true;
-    clearTimeout(playerStilHereTimeout);
-    playerStilHereInterval = setTimeout(function(){
+    socket.broadcast.emit('player here', playerHere);
+
+    clearTimeout(playerStillHereTimeout);
+
+    playerStillHereTimeout = setTimeout(function(){
+      console.log('just set playerHere to false...');
       playerHere = false;
       socket.broadcast.emit('player here', playerHere);
     }, 30000);
@@ -74,7 +78,7 @@ io.on('connection', function(socket){
 
   socket.on('player state change', function(evt){
     console.log('player state changed');
-    verifyPlayerStillHereCountdown()
+    verifyPlayerStillHereCountdown();
     socket.broadcast.emit('player state change', evt);
     lastState = evt;
   });
@@ -101,6 +105,9 @@ io.on('connection', function(socket){
 
   socket.on('add song', function(newId){
   	room.addSongToQueue(newId);
+    var i = room.getQueue().length-1;
+
+    room.moveSong(i, 1);
     emitQueue();
   });
 
