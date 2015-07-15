@@ -10,11 +10,12 @@ var events = require('events');
 
 var room = require('./room');
 
-var netIfaces = require('os').getNetworkInterfaces();
+var ip = require('my-local-ip')();
 
 var eventEmitter = new events.EventEmitter();
 
 var lastState;
+var playerHere = false;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -46,25 +47,42 @@ app.use(function(err, req, res, next) {
 io.on('connection', function(socket){
   console.log('a user connected');
 
-  socket.emit('server address', (netIfaces.wlan0[0].address || netIfaces.eth0[0].address)+':3000/');
+  socket.emit('server address', ip+':3000/');
+
+  var playerStilHereTimeout;
 
   setInterval(function(){
     emitQueue();
   }, 1000);
 
   socket.on('player added', function(){
+    verifyPlayerStillHereCountdown();
     emitQueue();
     socket.broadcast.emit('new player added');
   });
 
+  socket.on('player still here', verifyPlayerStillHereCountdown);
+
+  function verifyPlayerStillHereCountdown(){
+    playerHere = true;
+    clearTimeout(playerStilHereTimeout);
+    playerStilHereInterval = setTimeout(function(){
+      playerHere = false;
+      socket.broadcast.emit('player here', playerHere);
+    }, 30000);
+  }
+
   socket.on('player state change', function(evt){
     console.log('player state changed');
+    verifyPlayerStillHereCountdown()
     socket.broadcast.emit('player state change', evt);
     lastState = evt;
   });
 
   socket.on('controller joined', function(evt){
     if(lastState) socket.emit('player state change', lastState)
+
+    socket.emit('player here', playerHere);
   });
 
   socket.on('pop top of queue', function(songId){
@@ -108,6 +126,13 @@ io.on('connection', function(socket){
 
   socket.on('play song', function(){
     socket.broadcast.emit('play song');
+  })
+
+  socket.on('play now', function(id){
+    var pl = room.getQueue();
+    var i = pl.indexOf(id);
+    room.moveSong(i, 0);
+    emitQueue();
   })
 
   function emitQueue(){

@@ -62,6 +62,7 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	$scope.cachedResponces = {};
 	$scope.newSong = {};
 	$scope.queryStr = '';
+	$scope.playerHere = false;
 	$scope.playing = true;
 	$scope.address = '';
 	$scope.isController = isController;
@@ -71,7 +72,14 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	var ignoreEventUpdate = false;
 
 
-  if(isController) socket.emit('controller joined'); 
+  if(isController){ 
+  	socket.emit('controller joined');
+	}
+  else{ 
+	  $scope.playerHere = true;
+
+  	setInterval(function(){socket.emit('player still here');}, 10000); 
+	}
 
 	$scope.skipSong = function(){
 		socket.emit('pop top of queue', $scope.playlist[0].id);
@@ -99,6 +107,10 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 
 	$scope.playSong = function(){
 		socket.emit('play song');
+	};
+
+	$scope.playNow = function(song){
+		socket.emit('play now', song.id);
 	};
 
 	$scope.search = function(queryStr){
@@ -146,6 +158,7 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	});
 
 	socket.on('player state change', function(event){
+		$scope.playerHere = true;
 		if(!ignoreEventUpdate){
 			if(player){
 				if(event.target.B.currentTime > player.getCurrentTime()+2 ||
@@ -168,6 +181,7 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	});
 
 	socket.on('new player added', function(){
+		$scope.playerHere = true;
 		ignoreEventUpdate = true;
 
 		setTimeout(function(){
@@ -188,17 +202,21 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 		}, 1500);
 	});
 
+	socket.on('player here', function(isPlayerHere){
+		$scope.playerHere = isPlayerHere;
+	});
+
 	socket.on('pause song', function(){
 		if(player){
 			player.pauseVideo();
 		}
-	})
+	});
 
 	socket.on('play song', function(){
 		if(player){
 			player.playVideo();
 		}
-	})
+	});
 
 	function cacheAndAddVideos(queueArr){
 		$scope.playlist.splice(0, (queueArr.length > 0 ? queueArr.length : 1));

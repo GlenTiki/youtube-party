@@ -7,6 +7,12 @@ iframe {
 	margin: 0 auto; 
 }
 
+.dropDown{
+  position:fixed !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
 .jumbotron {
   text-align: center;
 }
