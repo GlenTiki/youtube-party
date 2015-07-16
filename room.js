@@ -2,7 +2,7 @@ var fs = require('fs');
 
 var queue = [];
 
-var configPath = process.resourcesPath || process.cwd() + '/config/'
+var configPath = (process.resourcesPath || process.cwd()) + '/config/'
 
 try{
   queue = require(configPath + 'ytpt-currQueue.js');
