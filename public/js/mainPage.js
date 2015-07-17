@@ -50,7 +50,7 @@ function onPlayerStateChange(event) {
 	if(event.data == YT.PlayerState.ENDED){
   	socket.emit('pop top of queue', player.getVideoData().video_id);
 	} else {
-  	socket.emit('player state change', event);
+  	if(!justJoined) socket.emit('player state change', event);
 	}
 }
 
@@ -79,6 +79,11 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	  $scope.playerHere = true;
 	  socket.on('reconnect', function(){
 	  	socket.emit('player still here');
+	  	justJoined = true;
+
+  	  setTimeout(function(){
+		    justJoined = false;
+      }, 2000);
 	  });
   	setInterval(function(){socket.emit('player still here');}, 10000); 
 	}
