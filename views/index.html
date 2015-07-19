@@ -5,12 +5,17 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/custom.css">
 
-    <script type="text/javascript" src="/js/angular.min.js"></script>
     <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/jqueryui.min.js"></script>
+    <script type="text/javascript" src="/js/jquery-browser.min.js"></script>
+    <script type="text/javascript" src="/js/angular.min.js"></script>
+    <script type="text/javascript" src="/js/angular-cookies.js"></script>
+    <script type="text/javascript" src="/js/angularui.min.js"></script>
     <script type="text/javascript" src="/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="/js/youtubeiframeapi.min.js"></script>
     <script type="text/javascript" src="/js/mainPage.js"></script>
+
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   </head>
@@ -55,26 +60,26 @@
       <div class="panel panel-primary">
         <div class="panel-heading">
           <div class="panel-title">
-            <h3 ng-show='playlist.length > 0'>
-              Current video: {{playlist[0].title}}
+            <h3 ng-show='playlistSongInfo.length > 0'>
+              Current video: {{playlistSongInfo[0].title}}
             </h3>
-            <h3 ng-show='playlist.length == 0'>
+            <h3 ng-show='playlistSongInfo.length == 0'>
               Nothing to play yet...
             </h3>
             <span ng-show='!playerHere'>(BTW, there is no current players!)</span>
           </div>
         </div>
         <div class="panel-body">
-          <button class="btn btn-primary" ng-click="skipSong()" width='110px' id='skipSongButton' ng-show='playlist.length > 1'>
+          <button class="btn btn-primary" ng-click="skipSong()" width='110px' id='skipSongButton' ng-show='playlistSongInfo.length > 1'>
             Skip song
           </button>
-          <button class="btn btn-primary" ng-click="pauseSong()" width='110px' id='pauseSongButton' ng-show='isController && playing && playlist.length > 0 && playerHere'>
+          <button class="btn btn-primary" ng-click="pauseSong()" width='110px' id='pauseSongButton' ng-show='isController && playing && playlistSongInfo.length > 0 && playerHere'>
             Pause song 
           </button>
-          <button class="btn btn-primary" ng-click="playSong()" width='110px' id='playSongButton' ng-show='isController && !playing && playlist.length > 0 && playerHere'>
+          <button class="btn btn-primary" ng-click="playSong()" width='110px' id='playSongButton' ng-show='isController && !playing && playlistSongInfo.length > 0 && playerHere'>
             Play song 
           </button>
-          <button class="btn btn-primary" ng-click="removeSong(playlist[0])" width='110px' id='deleteSongButton' ng-show='playlist.length > 0'>
+          <button class="btn btn-primary" ng-click="removeSong(playlistSongInfo[0])" width='110px' id='deleteSongButton' ng-show='playlistSongInfo.length > 0'>
             Remove song
           </button>
         </div>
@@ -90,16 +95,16 @@
         </div>
         <div id="currentPlaylistBody" class='panel-collapse collapse in' style="max-height: 500px;overflow-y:scroll;">
           <div class="panel-body">
-            <table class="table table-hover table-condensed" ng-show="playlist.length > 1">
+            <table class="table table-hover table-condensed" ng-show="playlistSongInfo.length > 1">
               <thead>
                 <tr>
                   <th class='col-sm-7'>Video title</th>
                   <th class='col-sm-2'>Length</th>
                   <th class='col-sm-1'>Options</th>
                 </tr>
-              <thead>
-              <tbody>
-                <tr ng-repeat="song in playlist" ng-show="$index != 0">
+              </thead>
+              <tbody ui-sortable='sortableOptions' ng:model="playlistSongInfo">
+                <tr ng-repeat="song in playlistSongInfo" class='song' ng-show="$index != 0" style="cursor: move;">
                   <td><img src="{{song.thumbnails.default.url}}" width='40' height='33'>{{song.title}}</td>
                   <td>{{song.duration | convert_time | seconds_to_string}}</td>
                   <td>
@@ -116,9 +121,9 @@
                     </div>
                   </td>
                 </tr>
-              <tbody>
+              </tbody>
             </table>
-            <div ng-show="playlist.length <= 1"><h4>Nothing queued!</h4></div>
+            <div ng-show="playlistSongInfo.length <= 1"><h4>Nothing queued!</h4></div>
             <p>You can add more videos using the search bar below.</p>
           </div>
         </div>
@@ -128,13 +133,13 @@
     <div class="panel panel-default col-sm-12" id="search">
       <div class="panel-heading col-sm-12">
         <form class='form-inline col-sm-12'>
-          <div class='form-group col-sm-8'>
+          <span class='form-group col-sm-8'>
             <input type="text" class="form-control" ng-model="queryStr" style='width:100%' placeholder="Search Youtube For Videos...">
-          </div>
-          <div class='pull-right col-sm-4'>
+          </span>
+          <span class='form-group col-sm-4'>
             <button type="submit" class="btn btn-primary" ng-click="search(queryStr)">Search</button>
             <button class="btn btn-primary" data-toggle="collapse" href="#collapseSearch" id='search-expand'>Expand</button>
-          </div>
+          </span>
         </form>
        </div>
       <div id="collapseSearch" class="panel-collapse collapse col-sm-12" style="max-height: 50vh;overflow-y: scroll;">

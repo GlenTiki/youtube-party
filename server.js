@@ -119,6 +119,11 @@ io.on('connection', function(socket){
     emitQueue();
   });
 
+  socket.on('move song', function(data){
+    room.moveSong(data.oldIndex, data.newIndex);
+    emitQueue();
+  });
+
   socket.on('push to back', function(id){
   	var pl = room.getQueue();
   	var i = pl.indexOf(id);

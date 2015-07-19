@@ -54,10 +54,11 @@ function onPlayerStateChange(event) {
 	}
 }
 
-var helloApp = angular.module("helloApp", []);
+var helloApp = angular.module("helloApp", ['ui']);
 
 helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	$scope.playlist = [];
+	$scope.playlistSongInfo = [];
 	$scope.searchResults = [];
 	$scope.cachedResponces = {};
 	$scope.newSong = {};
@@ -89,7 +90,7 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	}
 
 	$scope.skipSong = function(){
-		socket.emit('pop top of queue', $scope.playlist[0].id);
+		socket.emit('pop top of queue', $scope.playlistSongInfo[0].id);
 	}
 
 	$scope.removeSong = function(song){
@@ -210,7 +211,6 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	});
 
 	socket.on('player here', function(isPlayerHere){
-		console.log('player here state', isPlayerHere);
 		if(isController) $scope.playerHere = isPlayerHere;
 		$scope.$apply();
 	});
@@ -228,11 +228,13 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 	});
 
 	function cacheAndAddVideos(queueArr){
-		$scope.playlist.splice(0, (queueArr.length > 0 ? queueArr.length : 1));
+		$scope.playlistSongInfo.splice(0, (queueArr.length > 0 ? queueArr.length : 1));
+		$scope.playlist = queueArr;
+
 		queueArr.forEach(function(videoId, index){
 			if($scope.cachedResponces[videoId]){
 				$scope.cachedResponces[videoId].index = index;
-				$scope.playlist[index] = $scope.cachedResponces[videoId];
+				$scope.playlistSongInfo[index] = $scope.cachedResponces[videoId];
 			} else {
 				var responsePromise = $http.get("https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id="+videoId+"&key="+API_KEY);
 	
@@ -241,11 +243,29 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 					$scope.cachedResponces[videoId].duration = data.items[0].contentDetails.duration;
 					$scope.cachedResponces[videoId].id = videoId;
 				  $scope.cachedResponces[videoId].index = index;
-					$scope.playlist[$scope.cachedResponces[videoId].index] = $scope.cachedResponces[videoId];
+					$scope.playlistSongInfo[$scope.cachedResponces[videoId].index] = $scope.cachedResponces[videoId];
       	});
 			}
 		});
 	}
+
+	var oldIndex, newIndex;
+
+	$scope.sortableOptions = {
+		start: function(e, ui){
+			oldIndex = ui.item.index();
+		},
+
+    stop: function(e, ui) {
+    	console.log('updated playlist');
+    	newIndex = ui.item.index();
+
+    	if(oldIndex != newIndex){
+    		console.log('move', oldIndex, newIndex);
+    		socket.emit('move song', {oldIndex: oldIndex, newIndex: newIndex})
+    	}
+    }
+  };
 
 });
 
@@ -278,6 +298,7 @@ helloApp.filter('convert_time', function() {
     }
     return duration
 	}
+
 });
 
 helloApp.filter('seconds_to_string', function() {
@@ -289,6 +310,8 @@ helloApp.filter('seconds_to_string', function() {
     return (hours > 0 ? hours + ' hours. ' : '') +  minutes + ' minutes. ' + seconds + ' seconds.';
 	}
 });
+
+angular.bootstrap(document, ['helloApp']);
 
 $(document).ready(function(){
 	$('#qrCodesPanel').collapse("hide");
