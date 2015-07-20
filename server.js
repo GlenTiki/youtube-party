@@ -90,6 +90,7 @@ io.on('connection', function(socket){
   });
 
   socket.on('pop top of queue', function(songId){
+    console.log('pop top - ID, CurrTop:', songId, room.getQueue()[0]);
     if(songId === room.getQueue()[0]){
       room.pushTopSongToEnd();
     }

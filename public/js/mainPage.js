@@ -25,6 +25,7 @@ function onPlayerReady(event) {
   justJoined = true;
   var oldTime = 0;
 
+
   setTimeout(function(){
 		justJoined = false;
   }, 2000);
@@ -167,6 +168,7 @@ helloApp.controller("PlaylistCtrl", function($scope, $http) {
 
 	socket.on('player state change', function(event){
 		$scope.playerHere = true;
+		
 		if(!ignoreEventUpdate){
 			if(player){
 				if(event.target.B.currentTime > player.getCurrentTime()+2 ||
