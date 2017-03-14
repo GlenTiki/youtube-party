@@ -1,16 +1,19 @@
-#Youtube-party!
-##Host a youtube party with your friends! Perfect for playing your music at party!
+# Youtube-party!
+
+## Host a youtube party with your friends! Perfect for playing your music at party!
 
 Prerequisites: have nodejs or electron installed.
 
-###To start the party (with node): 
+### To start the party (with node): 
+
 In your command line client, navigate to the project directory and run the commands below:
 ```
 npm install
 node index.js
 ```
 
-###To start a the party (with electron):
+### To start a the party (with electron):
+
 In your command line client, navigate to the project directory and run the commands below:
 ```
 npm install
